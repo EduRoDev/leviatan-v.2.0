@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions, TypeOrmOptionsFactory } from '@nestjs/typeorm';
+import { Document } from 'src/entities/document.entities';
+import { Flashcard } from 'src/entities/flashcard.entities';
+import { Subject } from 'src/entities/subject.entities';
+import { Summary } from 'src/entities/summary.entities';
+import { User } from 'src/entities/user.entities';
 
 @Injectable()
 export class DatabaseService implements TypeOrmOptionsFactory {
@@ -18,6 +23,7 @@ export class DatabaseService implements TypeOrmOptionsFactory {
             database: this.configService.get<string>('DB_NAME'),
             synchronize: true,
             autoLoadEntities: true,
+            entities: [User,Subject,Document,Summary,Flashcard]
         }
     }
 }
