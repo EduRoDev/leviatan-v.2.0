@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Document } from "./document.entities";
 
 @Entity("flashcards")
@@ -6,13 +6,13 @@ export class Flashcard {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
+    @Column("text")
     question: string;
 
-    @Column()
+    @Column("text")
     answer: string;
 
-    @OneToOne(() => Document, document => document.flashcard)
+    @ManyToOne(() => Document, document => document.flashcards)
     @JoinColumn({ name: "document_id" })
     document: Document;
 }

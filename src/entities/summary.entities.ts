@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Document } from "./document.entities";
 
 @Entity("summary")
@@ -9,7 +9,7 @@ export class Summary {
     @Column()
     content: string;
 
-    @OneToOne(() => Document, document => document.summary)
+    @ManyToOne(() => Document, document => document.summaries)
     @JoinColumn({ name: "document_id" })
     document: Document;
 }
