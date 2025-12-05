@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/entities/user.entities';
 import { Repository } from 'typeorm';
 import { CreateUserDTO } from './dto/createUser.dto';
+import { UpdateUserDTO } from './dto/updateUser.dto';
 
 @Injectable()
 export class UserService {
@@ -19,11 +20,20 @@ export class UserService {
         return this.userRepo.save(newUser);
     }
 
-    findByEmail(email: string) {
-        const user = this.userRepo.findOneBy({ email})
+    async findByEmail(email: string) {
+        const user = await this.userRepo.findOneBy({ email})
         if (!user) {
             throw new BadRequestException('User not found');
         }
         return user;
+    }
+    
+    async updateUser(updateUserDTO: UpdateUserDTO, id: number) {
+        const user = await this.userRepo.findOneBy({ id });
+        if (!user) {
+            throw new BadRequestException('User not found');
+        }
+        const updatedUser = Object.assign(user, updateUserDTO);
+        return this.userRepo.save(updatedUser);
     }
 }

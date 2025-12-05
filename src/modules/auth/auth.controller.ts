@@ -1,14 +1,16 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { RegisterDTO } from './dto/register.dto';
 import { AuthService } from './auth.service';
 import { LoginDTO } from './dto/login.dto';
 import { AuthGuard } from './guard/auth.guard';
+import { UserService } from '../user/user.service';
 
 @Controller('auth')
 export class AuthController {
 
     constructor(
-        private readonly authService: AuthService
+        private readonly authService: AuthService,
+        private readonly userService: UserService
     ){}
 
     @Post('register')
@@ -23,7 +25,13 @@ export class AuthController {
 
     @Get('profile')
     @UseGuards(AuthGuard)
-    getProfile(){
-        return { message: 'This is a protected profile route' };
+    getProfile(@Query('email') email: string){
+        return this.userService.findByEmail(email);
+    }
+
+    @Patch('change-password')
+    @UseGuards(AuthGuard)
+    changePassword(@Query('email') email: string, @Body('newPassword') newPassword: string) {
+        return this.authService.changePassword(email, newPassword);
     }
 }
