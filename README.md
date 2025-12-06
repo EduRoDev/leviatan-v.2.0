@@ -1,98 +1,332 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Leviatan v2.0
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API Backend para plataforma educativa desarrollada con NestJS, TypeORM y PostgreSQL.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 📋 Tabla de Contenidos
 
-## Description
+- [Descripción](#descripción)
+- [Tecnologías](#tecnologías)
+- [Instalación](#instalación)
+- [Estructura del Proyecto](#estructura-del-proyecto)
+- [Entidades (Base de Datos)](#entidades-base-de-datos)
+- [Módulos y Endpoints](#módulos-y-endpoints)
+- [DTOs](#dtos)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+---
 
-## Project setup
+## 📖 Descripción
 
-```bash
-$ npm install
-```
+Leviatan es una plataforma educativa que permite a los usuarios gestionar materias, documentos, quizzes, flashcards y planes de estudio personalizados.
 
-## Compile and run the project
+---
 
-```bash
-# development
-$ npm run start
+## 🛠 Tecnologías
 
-# watch mode
-$ npm run start:dev
+| Tecnología | Versión |
+|------------|---------|
+| NestJS | ^11.0.1 |
+| TypeORM | ^0.3.28 |
+| PostgreSQL | pg ^8.16.3 |
+| JWT | @nestjs/jwt ^11.0.1 |
+| bcryptjs | ^3.0.3 |
+| class-validator | ^0.14.3 |
 
-# production mode
-$ npm run start:prod
-```
+---
 
-## Run tests
+## 🚀 Instalación
 
 ```bash
-# unit tests
-$ npm run test
+# Instalar dependencias
+npm install
 
-# e2e tests
-$ npm run test:e2e
+# Modo desarrollo (con hot-reload)
+npm run start:dev
 
-# test coverage
-$ npm run test:cov
+# Modo producción
+npm run start:prod
+
+# Tests
+npm run test
+npm run test:e2e
 ```
 
-## Deployment
+---
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## 📁 Estructura del Proyecto
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+```
+src/
+├── main.ts                 # Punto de entrada
+├── app.module.ts           # Módulo principal
+├── database/               # Configuración de base de datos
+│   ├── database.module.ts
+│   └── database.service.ts
+├── entities/               # Entidades TypeORM
+│   ├── user.entities.ts
+│   ├── subject.entities.ts
+│   ├── document.entities.ts
+│   ├── quiz.entities.ts
+│   ├── question.entities.ts
+│   ├── option.entities.ts
+│   ├── quiz-attempt.entities.ts
+│   ├── quiz-answer.entities.ts
+│   ├── flashcard.entities.ts
+│   ├── summary.entities.ts
+│   ├── chat-history.entities.ts
+│   └── custom-study-plan.entities.ts
+└── modules/
+    ├── auth/               # Autenticación
+    ├── user/               # Gestión de usuarios
+    └── subject/            # Gestión de materias
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+---
 
-## Resources
+## 🗃 Entidades (Base de Datos)
 
-Check out a few resources that may come in handy when working with NestJS:
+### User (users)
+Representa a los usuarios de la plataforma.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `id` | number | ID autoincremental |
+| `name` | string (30) | Nombre del usuario |
+| `last_name` | string (30) | Apellido del usuario |
+| `email` | string (50) | Email único |
+| `password` | string (255) | Contraseña hasheada |
 
-## Support
+**Relaciones:**
+- `subjects` → OneToMany con Subject
+- `quiz_attempts` → OneToMany con QuizAttempt
+- `chat_histories` → OneToMany con ChatHistory
+- `study_plans` → OneToMany con CustomStudyPlan
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+---
 
-## Stay in touch
+### Subject (subject)
+Materias o asignaturas del usuario.
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `id` | number | ID autoincremental |
+| `name` | string | Nombre de la materia |
+| `description` | string | Descripción de la materia |
+| `user_id` | FK → User | Usuario propietario |
 
-## License
+**Relaciones:**
+- `user` → ManyToOne con User
+- `documents` → OneToMany con Document
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+---
+
+### Document (documents)
+Documentos asociados a una materia.
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `id` | number | ID autoincremental |
+| `title` | string (100) | Título del documento |
+| `content` | string | Contenido del documento |
+| `file_path` | string | Ruta del archivo |
+| `audio_url` | string (nullable) | URL del audio |
+| `subject_id` | FK → Subject | Materia asociada |
+
+**Relaciones:**
+- `subject` → ManyToOne con Subject
+- `summaries` → OneToMany con Summary
+- `flashcards` → OneToMany con Flashcard
+- `quizzes` → OneToMany con Quiz
+- `chat_histories` → OneToMany con ChatHistory
+- `study_plans` → OneToMany con CustomStudyPlan
+
+---
+
+## 🔌 Módulos y Endpoints
+
+### 🔐 Auth Module (`/auth`)
+
+Maneja la autenticación y autorización de usuarios.
+
+#### Endpoints:
+
+| Método | Ruta | Descripción | Auth |
+|--------|------|-------------|------|
+| `POST` | `/auth/register` | Registrar nuevo usuario | ❌ |
+| `POST` | `/auth/login` | Iniciar sesión | ❌ |
+| `GET` | `/auth/profile?email=` | Obtener perfil del usuario | ✅ |
+| `PATCH` | `/auth/change-password?email=` | Cambiar contraseña | ✅ |
+
+#### Funcionalidades del AuthService:
+
+**`singUp(registerDTO)`**
+- Verifica si el usuario ya existe
+- Hashea la contraseña con bcryptjs (salt: 10)
+- Crea el nuevo usuario
+
+**`singIn(loginDTO)`**
+- Valida credenciales
+- Genera token JWT
+- Retorna: `{ token, email }`
+
+**`changePassword(email, newPassword)`**
+- Valida que la nueva contraseña tenga:
+  - Al menos una mayúscula
+  - Al menos una minúscula
+  - Al menos un número
+  - Al menos un carácter especial (!@#$%^&*(),.?":{}|<>)
+- Hashea y actualiza la contraseña
+
+---
+
+### 📚 Subject Module (`/subject`)
+
+Gestión de materias/asignaturas.
+
+#### Endpoints:
+
+| Método | Ruta | Descripción | Auth |
+|--------|------|-------------|------|
+| `POST` | `/subject/create?email=` | Crear nueva materia | ✅ |
+| `GET` | `/subject/by-user?email=` | Obtener materias del usuario | ✅ |
+| `GET` | `/subject/documents?id=` | Obtener documentos de una materia | ✅ |
+| `PATCH` | `/subject/update?id=` | Actualizar materia | ✅ |
+| `DELETE` | `/subject/delete?id=` | Eliminar materia | ✅ |
+
+#### Funcionalidades del SubjectService:
+
+**`createSubject(createSubjectDTO, email)`**
+- Busca el usuario por email
+- Crea la materia asociada al usuario
+- Retorna la materia creada
+
+**`getSubjectsByUser(email)`**
+- Obtiene todas las materias de un usuario
+
+**`getDocumentsBySubject(id)`**
+- Obtiene los documentos de una materia específica
+- Carga la relación `documents`
+
+**`updateSubject(id, updateSubjectDTO)`**
+- Actualiza nombre y/o descripción de la materia
+
+**`deleteSubject(id)`**
+- Elimina la materia
+- Retorna mensaje de confirmación
+
+---
+
+### 👤 User Module
+
+Servicio interno para gestión de usuarios (no expone endpoints directamente).
+
+#### Funcionalidades del UserService:
+
+| Método | Descripción |
+|--------|-------------|
+| `create(createUserDTO)` | Crea un nuevo usuario |
+| `findByEmail(email)` | Busca usuario por email |
+| `updateUser(updateUserDTO, id)` | Actualiza datos del usuario |
+
+---
+
+## 📝 DTOs
+
+### RegisterDTO
+```typescript
+{
+  name: string,        // Requerido
+  last_name: string,   // Requerido
+  email: string,       // Requerido, formato email
+  password: string     // Requerido, 8-10 caracteres
+}
+```
+
+### LoginDTO
+```typescript
+{
+  email: string,       // Requerido, formato email
+  password: string     // Requerido, 8-10 caracteres
+}
+```
+
+### CreateSubjectDTO
+```typescript
+{
+  name: string,        // Requerido
+  description: string  // Requerido
+}
+```
+
+### UpdateSubjectDTO
+```typescript
+{
+  name?: string,       // Opcional
+  description?: string // Opcional
+}
+```
+
+---
+
+## 🔒 Autenticación
+
+La API utiliza **JWT (JSON Web Tokens)** para autenticación.
+
+### Flujo:
+1. Usuario se registra (`/auth/register`)
+2. Usuario inicia sesión (`/auth/login`) → recibe token
+3. Para rutas protegidas, enviar token en header:
+   ```
+   Authorization: Bearer <token>
+   ```
+
+### Guard:
+El `AuthGuard` protege las rutas que requieren autenticación. Se aplica con el decorador `@UseGuards(AuthGuard)`.
+
+---
+
+## 📊 Diagrama de Relaciones
+
+```
+User (1) ──────────── (N) Subject
+  │                        │
+  │                        └── (1) ──── (N) Document
+  │                                          │
+  │                                          ├── (N) Summary
+  │                                          ├── (N) Flashcard
+  │                                          ├── (N) Quiz
+  │                                          │       │
+  │                                          │       └── (N) Question
+  │                                          │               │
+  │                                          │               └── (N) Option
+  │                                          │
+  │                                          ├── (N) ChatHistory
+  │                                          └── (N) CustomStudyPlan
+  │
+  ├── (N) QuizAttempt ──── (N) QuizAnswer
+  ├── (N) ChatHistory
+  └── (N) CustomStudyPlan
+```
+
+---
+
+## 📌 Notas Importantes
+
+1. **Contraseñas**: Se hashean con bcryptjs antes de guardarse
+2. **Validaciones**: Se usan class-validator para validar DTOs
+3. **Relaciones**: TypeORM maneja las relaciones automáticamente con `@ManyToOne`, `@OneToMany`
+4. **Cascade**: Las relaciones con `{ cascade: true }` eliminan entidades hijas automáticamente
+
+---
+
+## 🚧 Módulos Pendientes
+
+- [ ] Document Module (CRUD de documentos)
+- [ ] Quiz Module (gestión de quizzes)
+- [ ] Flashcard Module (tarjetas de estudio)
+- [ ] Summary Module (resúmenes)
+- [ ] ChatHistory Module (historial de chat)
+- [ ] CustomStudyPlan Module (planes de estudio)
+
+---
+
+

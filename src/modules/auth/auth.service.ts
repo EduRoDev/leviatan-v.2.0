@@ -72,7 +72,7 @@ export class AuthService {
             throw new BadRequestException('Password must contain at least one special character');
         }
 
-        const hashedPassword = await bcryptjs.hash(newPassword, 10);
+        const hashedPassword = await bcryptjs.hash(newPassword, 8);
         const updatedUser = await this.userService.updateUser({ password: hashedPassword }, user.id);
 
         return {

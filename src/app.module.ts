@@ -5,6 +5,7 @@ import { DatabaseModule } from './database/database.module';
 import { DatabaseService } from './database/database.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
+import { SubjectModule } from './modules/subject/subject.module';
 
 
 
@@ -18,7 +19,8 @@ import { UserModule } from './modules/user/user.module';
       useClass: DatabaseService,
     }),
     AuthModule,
-    UserModule
+    UserModule,
+    SubjectModule,
     
   ],
   controllers: [],

@@ -22,9 +22,6 @@ export class UserService {
 
     async findByEmail(email: string) {
         const user = await this.userRepo.findOneBy({ email})
-        if (!user) {
-            throw new BadRequestException('User not found');
-        }
         return user;
     }
     
