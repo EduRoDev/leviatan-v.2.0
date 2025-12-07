@@ -6,6 +6,7 @@ import { DatabaseService } from './database/database.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
 import { SubjectModule } from './modules/subject/subject.module';
+import { DocumentModule } from './modules/document/document.module';
 
 
 
@@ -21,6 +22,7 @@ import { SubjectModule } from './modules/subject/subject.module';
     AuthModule,
     UserModule,
     SubjectModule,
+    DocumentModule,
     
   ],
   controllers: [],
