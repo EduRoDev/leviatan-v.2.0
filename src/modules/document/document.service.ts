@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { SubjectService } from '../subject/subject.service';
 import { HttpService } from '@nestjs/axios';
 import { Repository } from 'typeorm';
@@ -8,6 +8,8 @@ import { CreateDocumentDTO } from './dto/createDocument.dto';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 import * as fs from 'fs'
+import { firstValueFrom } from 'rxjs';
+import FormData from 'form-data';
 
 dotenv.config();    
 
@@ -81,10 +83,9 @@ export class DocumentService {
         
 
     }
-
     private async extractData(filepath: string, documentId: number){
         const formData = new FormData();
-        formData.append('file', fs.creatReadStream(filepath));
+        formData.append('file', fs.createReadStream(filepath), path.basename(filepath));
         formData.append('document_id', documentId.toString());
 
         try{
@@ -93,13 +94,11 @@ export class DocumentService {
                     `${this.PYTHON_SERVICE_URL}/document/index`,
                     formData,
                     {
-                        headers: {
-                            ...formData.getHeaders()
-                        },
+                        headers: formData.getHeaders(),
                     }
                 )
             )
-
+            
             return {
                 content: response.data.content,
                 chunks_indexed: response.data.chunks_indexed
@@ -145,7 +144,8 @@ export class DocumentService {
         return { message: 'Document deleted successfully' };
     }
 
-    async retrieveContext(documentId: number, query: string, nResults: number = 5) {
+    async retrieveContext(documentId: number, query: string, nResults: number = 5)
+     {
         await this.getDocumentById(documentId);
 
         try {

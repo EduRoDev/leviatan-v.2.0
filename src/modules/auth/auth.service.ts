@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { RegisterDTO } from './dto/register.dto';
 import * as bcryptjs from 'bcryptjs';
@@ -33,7 +33,7 @@ export class AuthService {
     async singIn({ email, password }: LoginDTO) {
         const user = await this.userService.findByEmail(email)
         if (!user) {
-            throw new UnauthorizedException('Invalid credentials');
+            throw new NotFoundException('User not found');
         }
 
         const isPasswordValid = await bcryptjs.compare(password, user.password);
