@@ -7,6 +7,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
 import { SubjectModule } from './modules/subject/subject.module';
 import { DocumentModule } from './modules/document/document.module';
+import { OpenAiModule } from './utils/open-ai/open-ai.module';
 
 
 
@@ -23,6 +24,7 @@ import { DocumentModule } from './modules/document/document.module';
     UserModule,
     SubjectModule,
     DocumentModule,
+    OpenAiModule,
     
   ],
   controllers: [],

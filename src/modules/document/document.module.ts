@@ -13,6 +13,7 @@ import { Document } from 'src/entities/document.entities';
     TypeOrmModule.forFeature([Document])
   ],
   providers: [DocumentService],
-  controllers: [DocumentController]
+  controllers: [DocumentController],
+  exports: [DocumentService],
 })
 export class DocumentModule {}
