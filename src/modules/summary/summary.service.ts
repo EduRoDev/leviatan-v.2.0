@@ -10,7 +10,7 @@ export class SummaryService {
         @InjectRepository(Summary)
         private readonly summaryRepo: Repository<Summary>,
         private readonly openAIService: OpenAiService
-    ){}
+    ) { }
 
     async create(documentId: number): Promise<Summary> {
         const response = await this.openAIService.resumeDocument(documentId);
@@ -27,6 +27,10 @@ export class SummaryService {
         }
     }
 
+    async findById(id: number) {
+        return this .summaryRepo.findOneBy({ id })
+    }
+
     async findByDocumentId(documentId: number): Promise<Summary[]> {
         return this.summaryRepo.find({
             where: {
@@ -36,5 +40,5 @@ export class SummaryService {
             }
         });
     }
-    
+
 }

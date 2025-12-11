@@ -9,6 +9,7 @@ import { SubjectModule } from './modules/subject/subject.module';
 import { DocumentModule } from './modules/document/document.module';
 import { OpenAiModule } from './utils/open-ai/open-ai.module';
 import { SummaryModule } from './modules/summary/summary.module';
+import { FlashcardModule } from './modules/flashcard/flashcard.module';
 
 
 
@@ -27,6 +28,7 @@ import { SummaryModule } from './modules/summary/summary.module';
     DocumentModule,
     OpenAiModule,
     SummaryModule,
+    FlashcardModule,
     
   ],
   controllers: [],

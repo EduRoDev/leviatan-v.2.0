@@ -11,7 +11,7 @@ import * as fs from 'fs'
 import { firstValueFrom } from 'rxjs';
 import FormData from 'form-data';
 
-dotenv.config();    
+dotenv.config();
 
 @Injectable()
 export class DocumentService {
@@ -26,29 +26,42 @@ export class DocumentService {
         @InjectRepository(Document)
         private readonly documentRepo: Repository<Document>
 
-    ){
-        if(!fs.existsSync(this.UPLOAD_DIR)){
-            fs.mkdirSync(this.UPLOAD_DIR, { recursive: true } );
+    ) {
+        if (!fs.existsSync(this.UPLOAD_DIR)) {
+            fs.mkdirSync(this.UPLOAD_DIR, { recursive: true });
         }
-    }
+    }   
 
+    private sanitizeFilename(filename: string): string {
+        const normalized = filename
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/ñ/g, 'n')
+            .replace(/Ñ/g, 'N')
+            .replace(/[^a-zA-Z0-9.\-_]/g, '_')
+            .replace(/_+/g, '_') 
+            .replace(/^_|_$/g, '');
+        
+        return normalized;
+    }
 
     async createDocument(
         file: Express.Multer.File,
         createDocumentDTO: CreateDocumentDTO,
         subjectId: number
-    ){
+    ) {
 
         const subject = await this.subjectService.getDocumentsBySubject(subjectId);
         if (!subject) {
             throw new NotFoundException('Subject not found');
         }
 
-        const filename = `${Date.now()}-${file.originalname}`;
+        const sanitizedFilename = this.sanitizeFilename(file.originalname);
+        const filename = `${Date.now()}-${sanitizedFilename}`;
         const filepath = path.join(this.UPLOAD_DIR, filename);
-        
+
         try {
-           fs.writeFileSync(filepath, file.buffer) 
+            fs.writeFileSync(filepath, file.buffer)
         } catch (error) {
             throw new InternalServerErrorException('Error saving file')
         }
@@ -56,7 +69,7 @@ export class DocumentService {
         const newDocument = this.documentRepo.create({
             title: createDocumentDTO.title,
             content: '',
-            file_path: `/documents/${filename}`,
+            file_path: this.buildFilePath(`documents/${filename}`),
             subject: {
                 id: subjectId
             }
@@ -80,15 +93,15 @@ export class DocumentService {
             fs.unlinkSync(filepath);
             throw new BadRequestException('Error extracting data from document')
         }
-        
+
 
     }
-    private async extractData(filepath: string, documentId: number){
+    private async extractData(filepath: string, documentId: number) {
         const formData = new FormData();
         formData.append('file', fs.createReadStream(filepath), path.basename(filepath));
         formData.append('document_id', documentId.toString());
 
-        try{
+        try {
             const response = await firstValueFrom(
                 this.httpService.post(
                     `${this.PYTHON_SERVICE_URL}/document/index`,
@@ -98,7 +111,7 @@ export class DocumentService {
                     }
                 )
             )
-            
+
             return {
                 content: response.data.content,
                 chunks_indexed: response.data.chunks_indexed
@@ -106,7 +119,7 @@ export class DocumentService {
         } catch (error) {
             throw new Error(error.response?.data?.detail || 'Error extracting data from document');
         }
-        
+
     }
 
     async getDocumentById(id: number) {
@@ -121,7 +134,7 @@ export class DocumentService {
 
     async deleteDocument(id: number) {
         const document = await this.documentRepo.findOneBy({ id });
-        
+
         if (!document) {
             throw new NotFoundException('Document not found');
         }
@@ -134,7 +147,9 @@ export class DocumentService {
             console.error('Error deleting from ChromaDB:', error.message);
         }
 
-        const filePath = path.join(process.cwd(), 'public', document.file_path);
+        const relativePath = document.file_path.replace(process.env.BASE_URL || 'http://localhost:3000', '');
+        const filePath = path.join(process.cwd(), 'public', relativePath);
+
         if (fs.existsSync(filePath)) {
             fs.unlinkSync(filePath);
         }
@@ -144,8 +159,7 @@ export class DocumentService {
         return { message: 'Document deleted successfully' };
     }
 
-    async retrieveContext(documentId: number, query: string, nResults: number = 5)
-     {
+    async retrieveContext(documentId: number, query: string, nResults: number = 5) {
         await this.getDocumentById(documentId);
 
         try {
@@ -162,7 +176,16 @@ export class DocumentService {
             throw new BadRequestException('Error retrieving context');
         }
     }
-    
-    
+
+    private buildFilePath(relativePath: string): string {
+        if (relativePath.startsWith('http://') || relativePath.startsWith('https://')) {
+            return relativePath;
+        }
+
+        const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+        const cleanPath = relativePath.startsWith('/') ? relativePath : `/${relativePath}`;
+        return `${baseUrl}${cleanPath}`;
+    }
+
 
 }

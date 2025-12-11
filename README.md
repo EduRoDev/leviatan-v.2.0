@@ -215,6 +215,75 @@ Gestión de materias/asignaturas.
 
 ---
 
+### 📄 Document Module (`/document`)
+
+Gestión de documentos asociados a materias. Integra con un microservicio Python para extracción de datos y RAG (Retrieval-Augmented Generation).
+
+#### Endpoints:
+
+| Método | Ruta | Descripción | Auth |
+|--------|------|-------------|------|
+| `POST` | `/document/create?subjectId=` | Subir y crear documento | ✅ |
+| `GET` | `/document/:id` | Obtener documento por ID | ✅ |
+| `DELETE` | `/document/:id` | Eliminar documento | ✅ |
+| `POST` | `/document/:id/retrieve` | Recuperar contexto para RAG | ✅ |
+
+#### Archivos Permitidos:
+- PDF (`.pdf`)
+- Word (`.doc`, `.docx`)
+- PowerPoint (`.pptx`)
+- **Tamaño máximo:** 10 MB
+
+#### Funcionalidades del DocumentService:
+
+**`createDocument(file, createDocumentDTO, subjectId)`**
+- Valida que la materia exista
+- Guarda el archivo en `/public/documents/`
+- Envía el documento al microservicio Python para indexación
+- Extrae el contenido y lo almacena en la base de datos
+- Retorna documento con información de chunks indexados
+
+**`getDocumentById(id)`**
+- Busca y retorna un documento por su ID
+- Lanza `NotFoundException` si no existe
+
+**`deleteDocument(id)`**
+- Elimina el documento de ChromaDB (microservicio Python)
+- Elimina el archivo físico del servidor
+- Elimina el registro de la base de datos
+
+**`retrieveContext(documentId, query, nResults)`**
+- Consulta al microservicio Python para obtener contexto relevante
+- Utiliza RAG para búsqueda semántica
+- `nResults` por defecto: 5
+
+---
+
+### 📝 Summary Module (`/summary`)
+
+Generación de resúmenes automáticos utilizando OpenAI.
+
+#### Endpoints:
+
+| Método | Ruta | Descripción | Auth |
+|--------|------|-------------|------|
+| `POST` | `/summary/create?document=` | Generar resumen de documento | ❌ |
+
+#### Funcionalidades del SummaryService:
+
+**`create(documentId)`**
+- Utiliza OpenAI para generar un resumen del documento
+- Almacena el resumen en la base de datos
+- Retorna el resumen creado con mensaje de confirmación
+
+**`findById(id)`**
+- Busca un resumen por su ID
+
+**`findByDocumentId(documentId)`**
+- Obtiene todos los resúmenes asociados a un documento
+
+---
+
 ### 👤 User Module
 
 Servicio interno para gestión de usuarios (no expone endpoints directamente).
@@ -264,6 +333,14 @@ Servicio interno para gestión de usuarios (no expone endpoints directamente).
   description?: string // Opcional
 }
 ```
+
+### CreateDocumentDTO
+```typescript
+{
+  title: string        // Requerido, título del documento
+}
+```
+> **Nota:** El documento se sube como `multipart/form-data` con el campo `file` para el archivo.
 
 ---
 
@@ -320,10 +397,10 @@ User (1) ──────────── (N) Subject
 
 ## 🚧 Módulos Pendientes
 
-- [ ] Document Module (CRUD de documentos)
+- [x] Document Module (CRUD de documentos + integración RAG)
 - [ ] Quiz Module (gestión de quizzes)
 - [ ] Flashcard Module (tarjetas de estudio)
-- [ ] Summary Module (resúmenes)
+- [x] Summary Module (resúmenes con OpenAI)
 - [ ] ChatHistory Module (historial de chat)
 - [ ] CustomStudyPlan Module (planes de estudio)
 
