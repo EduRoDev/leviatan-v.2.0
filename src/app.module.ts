@@ -10,6 +10,7 @@ import { DocumentModule } from './modules/document/document.module';
 import { OpenAiModule } from './utils/open-ai/open-ai.module';
 import { SummaryModule } from './modules/summary/summary.module';
 import { FlashcardModule } from './modules/flashcard/flashcard.module';
+import { QuizModule } from './modules/quiz/quiz.module';
 
 
 
@@ -29,6 +30,7 @@ import { FlashcardModule } from './modules/flashcard/flashcard.module';
     OpenAiModule,
     SummaryModule,
     FlashcardModule,
+    QuizModule,
     
   ],
   controllers: [],

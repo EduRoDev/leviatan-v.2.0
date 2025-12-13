@@ -1,4 +1,4 @@
-import { Controller, Post, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { SummaryService } from './summary.service';
 import { AuthGuard } from '../auth/guard/auth.guard';
 
@@ -10,5 +10,11 @@ export class SummaryController {
     @UseGuards(AuthGuard)
     async create(@Query('document') document:number){
         return this.summaryService.create(document);
+    }
+
+    @Get('find')
+    @UseGuards(AuthGuard)
+    async findById(@Query('id') id: number){
+        return await this.summaryService.findById(id);
     }
 }
