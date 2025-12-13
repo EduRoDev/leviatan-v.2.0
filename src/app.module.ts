@@ -11,6 +11,9 @@ import { OpenAiModule } from './utils/open-ai/open-ai.module';
 import { SummaryModule } from './modules/summary/summary.module';
 import { FlashcardModule } from './modules/flashcard/flashcard.module';
 import { QuizModule } from './modules/quiz/quiz.module';
+import { ChatModule } from './modules/chat/chat.module';
+import { StudyPlanModule } from './modules/study-plan/study-plan.module';
+import { StatisticsModule } from './modules/statistics/statistics.module';
 
 
 
@@ -31,6 +34,9 @@ import { QuizModule } from './modules/quiz/quiz.module';
     SummaryModule,
     FlashcardModule,
     QuizModule,
+    ChatModule,
+    StudyPlanModule,
+    StatisticsModule,
     
   ],
   controllers: [],

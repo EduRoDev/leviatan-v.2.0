@@ -74,10 +74,44 @@ src/
 │   ├── summary.entities.ts
 │   ├── chat-history.entities.ts
 │   └── custom-study-plan.entities.ts
-└── modules/
-    ├── auth/               # Autenticación
-    ├── user/               # Gestión de usuarios
-    └── subject/            # Gestión de materias
+├── modules/
+│   ├── auth/               # Autenticación
+│   │   ├── auth.controller.ts
+│   │   ├── auth.module.ts
+│   │   ├── auth.service.ts
+│   │   ├── constants/
+│   │   ├── dto/
+│   │   └── guard/
+│   ├── user/               # Gestión de usuarios
+│   │   ├── user.controller.ts
+│   │   ├── user.module.ts
+│   │   └── user.service.ts
+│   ├── subject/            # Gestión de materias
+│   │   ├── subject.controller.ts
+│   │   ├── subject.module.ts
+│   │   ├── subject.service.ts
+│   │   └── dto/
+│   ├── document/           # Gestión de documentos
+│   │   ├── document.controller.ts
+│   │   ├── document.module.ts
+│   │   ├── document.service.ts
+│   │   └── dto/
+│   ├── quiz/               # Generación de quizzes
+│   │   ├── quiz.controller.ts
+│   │   ├── quiz.module.ts
+│   │   └── quiz.service.ts
+│   ├── flashcard/          # Generación de flashcards
+│   │   ├── flashcard.controller.ts
+│   │   ├── flashcard.module.ts
+│   │   └── flashcard.service.ts
+│   └── summary/            # Generación de resúmenes
+│       ├── summary.controller.ts
+│       ├── summary.module.ts
+│       └── summary.service.ts
+└── utils/
+    └── open-ai/            # Integración con OpenAI
+        ├── open-ai.module.ts
+        └── open-ai.service.ts
 ```
 
 ---
@@ -395,14 +429,128 @@ User (1) ──────────── (N) Subject
 
 ---
 
+### 🎯 Quiz Module (`/quiz`)
+
+Generación automática de quizzes con preguntas de opción múltiple utilizando OpenAI.
+
+#### Endpoints:
+
+| Método | Ruta | Descripción | Auth |
+|--------|------|-------------|------|
+| `POST` | `/quiz/create?documentId=` | Generar quiz de documento | ✅ |
+| `GET` | `/quiz/by-document?documentId=` | Obtener quiz por documento | ✅ |
+
+#### Estructura del Quiz Generado:
+
+```json
+{
+  "title": "Título del quiz",
+  "questions": [
+    {
+      "question_text": "¿Pregunta de ejemplo?",
+      "options": ["Opción A", "Opción B", "Opción C", "Opción D"],
+      "correct_option": "Opción correcta"
+    }
+  ]
+}
+```
+
+#### Funcionalidades del QuizService:
+
+**`createQuiz(documentId)`**
+- Utiliza OpenAI para generar preguntas basadas en el contenido del documento
+- Crea la estructura completa: Quiz → Questions → Options
+- Aprovecha `cascade: true` de TypeORM para guardar todas las entidades en una sola operación
+- Retorna el quiz completo con todas sus preguntas y opciones
+
+**Proceso de guardado:**
+```typescript
+// Se crea toda la estructura jerárquica de una vez
+const quiz = {
+  title: "...",
+  document: { id: documentId },
+  questions: [
+    {
+      question_text: "...",
+      correct_option: "...",
+      options: [
+        { option_text: "Opción A" },
+        { option_text: "Opción B" },
+        // ...
+      ]
+    }
+  ]
+}
+// TypeORM guarda automáticamente Quiz, Questions y Options
+```
+
+**`getQuizByDocument(documentId)`**
+- Obtiene el quiz asociado a un documento
+- Carga todas las relaciones: questions → options
+- Lanza `BadRequestException` si no existe quiz
+
+---
+
+### 🎴 Flashcard Module (`/flashcard`)
+
+Generación automática de tarjetas de estudio (flashcards) con preguntas y respuestas utilizando OpenAI.
+
+#### Endpoints:
+
+| Método | Ruta | Descripción | Auth |
+|--------|------|-------------|------|
+| `POST` | `/flashcard/create?document=` | Generar flashcards de documento | ✅ |
+| `GET` | `/flashcard/find?id=` | Obtener flashcards por documento | ✅ |
+
+#### Estructura de Flashcard:
+
+```json
+{
+  "id": 1,
+  "question": "¿Qué es...?",
+  "answer": "Definición o respuesta detallada"
+}
+```
+
+#### Funcionalidades del FlashcardService:
+
+**`create(documentId)`**
+- Utiliza OpenAI para generar pares de pregunta-respuesta basados en el contenido del documento
+- Extrae conceptos clave y sus definiciones
+- Guarda múltiples flashcards asociadas al documento
+- Retorna mensaje de éxito con las flashcards creadas
+
+**Proceso de creación:**
+```typescript
+// OpenAI genera:
+[
+  { subject: "Concepto 1", definition: "Definición 1" },
+  { subject: "Concepto 2", definition: "Definición 2" }
+]
+
+// Se mapean a:
+[
+  { question: "Concepto 1", answer: "Definición 1", document: { id } },
+  { question: "Concepto 2", answer: "Definición 2", document: { id } }
+]
+```
+
+**`findByDocumentId(id)`**
+- Obtiene todas las flashcards asociadas a un documento específico
+- Retorna array de flashcards con pregunta y respuesta
+
+---
+
 ## 🚧 Módulos Pendientes
 
 - [x] Document Module (CRUD de documentos + integración RAG)
-- [ ] Quiz Module (gestión de quizzes)
-- [ ] Flashcard Module (tarjetas de estudio)
+- [x] Quiz Module (generación de quizzes con OpenAI)
+- [x] Flashcard Module (generación de flashcards con OpenAI)
 - [x] Summary Module (resúmenes con OpenAI)
 - [ ] ChatHistory Module (historial de chat)
 - [ ] CustomStudyPlan Module (planes de estudio)
+- [ ] Statistics module (Estadisticas de usuario )
+
 
 ---
 
