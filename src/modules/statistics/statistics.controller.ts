@@ -1,9 +1,11 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post, Query, UseGuards } from '@nestjs/common';
 import { StatisticsService } from './statistics.service';
 import { SubmitQuizDto } from './dto/submit.dto';
+import { AuthGuard } from '../auth/guard/auth.guard';
 
 
 @Controller('statistics')
+@UseGuards(AuthGuard)
 export class StatisticsController {
     constructor(
         private readonly statisticsService: StatisticsService

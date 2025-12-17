@@ -315,7 +315,7 @@ Generación de resúmenes automáticos utilizando OpenAI.
 
 | Método | Ruta | Descripción | Auth |
 |--------|------|-------------|------|
-| `POST` | `/summary/create?document=` | Generar resumen de documento | ❌ |
+| `POST` | `/summary/create?document=` | Generar resumen de documento | ✅ |
 
 #### Funcionalidades del SummaryService:
 
