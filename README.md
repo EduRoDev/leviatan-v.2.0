@@ -104,10 +104,24 @@ src/
 │   │   ├── flashcard.controller.ts
 │   │   ├── flashcard.module.ts
 │   │   └── flashcard.service.ts
-│   └── summary/            # Generación de resúmenes
-│       ├── summary.controller.ts
-│       ├── summary.module.ts
-│       └── summary.service.ts
+│   ├── summary/            # Generación de resúmenes
+│   │   ├── summary.controller.ts
+│   │   ├── summary.module.ts
+│   │   └── summary.service.ts
+│   ├── chat/               # Chat con documentos
+│   │   ├── chat.controller.ts
+│   │   ├── chat.module.ts
+│   │   └── chat.service.ts
+│   ├── study-plan/         # Planes de estudio personalizados
+│   │   ├── study-plan.controller.ts
+│   │   ├── study-plan.module.ts
+│   │   ├── study-plan.service.ts
+│   │   
+│   └── statistics/         # Estadísticas y resultados de quizzes
+│       ├── statistics.controller.ts
+│       ├── statistics.module.ts
+│       ├── statistics.service.ts
+│       └── dto/
 └── utils/
     └── open-ai/            # Integración con OpenAI
         ├── open-ai.module.ts
@@ -640,15 +654,124 @@ if (!['basico', 'intermedio', 'avanzado'].includes(level_plan.toLowerCase())) {
 
 ---
 
-## 🚧 Módulos Pendientes
+### 📊 Statistics Module (`/statistics`)
 
+Gestión de intentos de quizzes, respuestas y estadísticas de rendimiento del usuario.
+
+#### Endpoints:
+
+| Método | Ruta | Descripción | Auth |
+|--------|------|-------------|------|
+| `POST` | `/statistics/quiz/:quizId/submit?user=` | Enviar respuestas de quiz | ✅ |
+| `GET` | `/statistics/user/statistics?user=` | Obtener estadísticas del usuario | ✅ |
+| `GET` | `/statistics/user/progress-by-subject?user=` | Progreso por materia/documento | ✅ |
+| `GET` | `/statistics/quiz/:quizId/statistics` | Estadísticas de un quiz específico | ✅ |
+
+#### Body para Submit Quiz:
+
+```json
+{
+  "answers": [
+    {
+      "question_id": 1,
+      "selected_option": "Opción A"
+    },
+    {
+      "question_id": 2,
+      "selected_option": "Opción C"
+    }
+  ],
+  "time_taken": 180
+}
+```
+
+#### Respuesta del Submit:
+
+```json
+{
+  "message": "Quiz submitted successfully",
+  "attempt": {
+    "id": 1,
+    "score": 80.5,
+    "correct_answers": 4,
+    "total_questions": 5,
+    "time_taken": 180,
+    "completed_at": "2025-12-17T01:30:00.000Z"
+  }
+}
+```
+
+#### Funcionalidades del StatisticsService:
+
+**`recordQuizAttempt(userId, quizId, answers, timeTaken)`**
+- Valida que el quiz exista
+- Obtiene todas las preguntas del quiz
+- Crea un registro de intento (`QuizAttempt`)
+- Procesa cada respuesta comparándola con la respuesta correcta
+- Guarda todas las respuestas individuales (`QuizAnswer`) con su estado de corrección
+- Calcula el score: `(correctas / totales) * 100`
+- Retorna el intento completo con el score calculado
+
+**Proceso de guardado:**
+```typescript
+// 1. Verificar quiz existe
+// 2. Crear QuizAttempt con score inicial 0
+// 3. Por cada respuesta del usuario:
+//    - Comparar con correct_option de la pregunta
+//    - Crear QuizAnswer con is_correct
+// 4. Calcular score final
+// 5. Actualizar QuizAttempt con score y respuestas correctas
+```
+
+**`getUserStatistics(userId)`**
+- Obtiene todos los intentos de quiz del usuario
+- Calcula estadísticas globales:
+  - **total_quizzes**: Cantidad de quizzes realizados
+  - **average_score**: Promedio de scores
+  - **total_time**: Tiempo total invertido
+  - **best_score**: Mejor puntuación obtenida
+  - **worst_score**: Peor puntuación obtenida
+  - **recent_attempts**: Últimos 5 intentos con detalles
+- Retorna objeto con todas las métricas
+
+**`getUserProgressBySubject(userId)`**
+- Agrupa los intentos de quiz por documento y materia
+- Utiliza QueryBuilder para hacer joins con `quiz` y `document`
+- Calcula por cada agrupación:
+  - Cantidad de intentos totales
+  - Promedio de score
+- Útil para ver en qué materias tiene mejor/peor desempeño el usuario
+
+**`getQuizStatistics(quizId)`**
+- Obtiene todos los intentos realizados sobre un quiz específico
+- Calcula métricas del quiz:
+  - **total_attempts**: Cuántas veces se ha intentado
+  - **average_score**: Promedio de scores de todos los usuarios
+  - **pass_rate**: Porcentaje de usuarios que obtuvieron ≥70%
+  - **difficult_questions**: Lista de preguntas con >50% de tasa de error
+- Identifica las preguntas más difíciles del quiz
+
+**`identifyDifficultQuestions(quizId)`** (método privado)
+- Agrupa respuestas por pregunta
+- Calcula la tasa de error: `((total - correctas) / total) * 100`
+- Filtra preguntas con tasa de error > 50%
+- Ordena por tasa de error descendente
+- Retorna lista de preguntas problemáticas con su error rate
+
+---
+
+## 🚧 Módulos Implementados
+
+- [x] Auth Module (autenticación y autorización con JWT)
+- [x] User Module (gestión de usuarios)
+- [x] Subject Module (gestión de materias)
 - [x] Document Module (CRUD de documentos + integración RAG)
 - [x] Quiz Module (generación de quizzes con OpenAI)
 - [x] Flashcard Module (generación de flashcards con OpenAI)
 - [x] Summary Module (resúmenes con OpenAI)
 - [x] Chat Module (chat inteligente con documentos)
 - [x] Study Plan Module (planes de estudio personalizados)
-- [ ] Statistics Module (estadísticas de usuario)
+- [x] Statistics Module (estadísticas y seguimiento de rendimiento)
 
 ---
 
