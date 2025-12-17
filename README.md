@@ -541,16 +541,114 @@ Generación automática de tarjetas de estudio (flashcards) con preguntas y resp
 
 ---
 
+### 💬 Chat Module (`/chat`)
+
+Sistema de chat inteligente que permite hacer preguntas sobre documentos utilizando OpenAI. Mantiene historial de conversaciones.
+
+#### Endpoints:
+
+| Método | Ruta | Descripción | Auth |
+|--------|------|-------------|------|
+| `POST` | `/chat/chat?document=&user=` | Chatear con documento | ✅ |
+| `GET` | `/chat/history?user=&document=` | Obtener historial de chat | ✅ |
+
+#### Estructura del Chat:
+
+```json
+{
+  "message": "Pregunta del usuario",
+  "response": "Respuesta de la IA"
+}
+```
+
+#### Funcionalidades del ChatService:
+
+**`chatWithDocument(documentId, userId, message)`**
+- Envía la pregunta al servicio de OpenAI para obtener respuesta basada en el contenido del documento
+- Utiliza el contenido truncado del documento (máximo 10,000 caracteres)
+- Guarda el mensaje y la respuesta en la entidad `ChatHistory`
+- Asocia el chat al usuario y documento específicos
+- Retorna la respuesta generada por la IA
+- Límite de respuesta: 300 palabras
+
+**Características de las respuestas:**
+- Basadas únicamente en el contenido del documento
+- Tono profesional y educativo
+- Sin formato Markdown (sin negritas ni cursivas)
+- Máximo 300 palabras por respuesta
+
+**`findChatHistory(userId, documentId)`**
+- Obtiene el historial completo de conversaciones de un usuario con un documento específico
+- Ordenado cronológicamente (ASC)
+- Retorna array de mensajes y respuestas con timestamps
+
+---
+
+### 📅 Study Plan Module (`/study-plan`)
+
+Generación automática de planes de estudio personalizados según el nivel del estudiante (básico, intermedio, avanzado).
+
+#### Endpoints:
+
+| Método | Ruta | Descripción | Auth |
+|--------|------|-------------|------|
+| `POST` | `/study-plan/create?document=&user=&level=` | Crear plan de estudio | ✅ |
+| `GET` | `/study-plan/find?user=&document=` | Obtener planes de estudio | ✅ |
+
+#### Niveles Válidos:
+- `basico` - Plan de estudio básico
+- `intermedio` - Plan de estudio intermedio
+- `avanzado` - Plan de estudio avanzado
+
+#### Estructura del Plan de Estudio:
+
+```json
+{
+  "message": "Study plan created successfully"
+}
+```
+
+El plan contiene:
+- `objectives`: Array de objetivos de aprendizaje
+- `recommended_resources`: Recursos recomendados
+- `schedule`: Cronograma de estudio organizado por días/semanas
+
+#### Funcionalidades del StudyPlanService:
+
+**`createStudyPlan(documentId, userId, level_plan)`**
+- **Validación de nivel:** Verifica que el nivel sea uno de los válidos (basico, intermedio, avanzado)
+- Si el nivel es inválido, lanza `BadRequestException` antes de consumir recursos de OpenAI
+- Utiliza OpenAI para generar un plan personalizado basado en el contenido del documento y el nivel
+- Crea el plan con título descriptivo: `"Plan de estudio - {nivel}"`
+- Guarda el plan completo en la base de datos asociado al usuario y documento
+- Retorna mensaje de confirmación
+
+**Proceso de validación:**
+```typescript
+// 1. Validar nivel PRIMERO (antes de llamar OpenAI)
+if (!['basico', 'intermedio', 'avanzado'].includes(level_plan.toLowerCase())) {
+  throw new BadRequestException('Invalid level plan');
+}
+// 2. Generar plan con OpenAI
+// 3. Guardar en base de datos
+```
+
+**`getStudyPlans(userId, documentId)`**
+- Obtiene todos los planes de estudio creados por un usuario para un documento específico
+- Permite ver diferentes planes con distintos niveles
+- Retorna array de planes de estudio con todo su contenido
+
+---
+
 ## 🚧 Módulos Pendientes
 
 - [x] Document Module (CRUD de documentos + integración RAG)
 - [x] Quiz Module (generación de quizzes con OpenAI)
 - [x] Flashcard Module (generación de flashcards con OpenAI)
 - [x] Summary Module (resúmenes con OpenAI)
-- [ ] ChatHistory Module (historial de chat)
-- [ ] CustomStudyPlan Module (planes de estudio)
-- [ ] Statistics module (Estadisticas de usuario )
-
+- [x] Chat Module (chat inteligente con documentos)
+- [x] Study Plan Module (planes de estudio personalizados)
+- [ ] Statistics Module (estadísticas de usuario)
 
 ---
 
