@@ -1,12 +1,15 @@
 import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
+import * as path from 'path';
+import * as fs from 'fs'
 import { DocumentService } from 'src/modules/document/document.service';
 
 
 @Injectable()
 export class OpenAiService {
     private openai: OpenAI;
+    private readonly UPLOAD_DIR = path.join(process.cwd(), 'public', 'documents')
 
     constructor(
         private readonly configService: ConfigService,
@@ -19,6 +22,22 @@ export class OpenAiService {
             baseURL: 'https://openrouter.ai/api/v1'
         })
     }
+
+    // async generateAudio(documentId: number): Promise<string> {
+    //     const document = await this.documentService.getDocumentById(documentId)
+    //     const response = await this.openai.audio.speech.create({
+    //         model: 'amazon/nova-2-lite-v1:free',
+    //         input: document.content,
+    //         voice: 'alloy',
+    //     })
+
+    //     const buffer = Buffer.from(await response.arrayBuffer());
+    //     const filename = `document-${documentId}-${Date.now()}.mp3`;
+    //     const filePath = path.join(this.UPLOAD_DIR, filename);
+    //     fs.writeFileSync(filePath, buffer);
+
+    //     return "audio created successfully";
+    // }
 
     async resumeDocument(documentId: number): Promise<string> {
         const document = await this.documentService.getDocumentById(documentId);

@@ -10,6 +10,8 @@ import * as path from 'path';
 import * as fs from 'fs'
 import { firstValueFrom } from 'rxjs';
 import FormData from 'form-data';
+import wav from 'wav';
+import { GoogleGenAI } from '@google/genai';
 
 dotenv.config();
 
@@ -18,6 +20,7 @@ export class DocumentService {
 
     private readonly PYTHON_SERVICE_URL = process.env.MICROSERVICE_URL;
     private readonly UPLOAD_DIR = path.join(process.cwd(), 'public', 'documents')
+    private readonly UPLOAD_DIR_AUDIO = path.join(process.cwd(), 'public', 'audio')
 
     constructor(
         private readonly subjectService: SubjectService,
@@ -30,7 +33,10 @@ export class DocumentService {
         if (!fs.existsSync(this.UPLOAD_DIR)) {
             fs.mkdirSync(this.UPLOAD_DIR, { recursive: true });
         }
-    }   
+        if (!fs.existsSync(this.UPLOAD_DIR_AUDIO)) {
+            fs.mkdirSync(this.UPLOAD_DIR_AUDIO, { recursive: true });
+        }
+    }
 
     private sanitizeFilename(filename: string): string {
         const normalized = filename
@@ -39,9 +45,9 @@ export class DocumentService {
             .replace(/ñ/g, 'n')
             .replace(/Ñ/g, 'N')
             .replace(/[^a-zA-Z0-9.\-_]/g, '_')
-            .replace(/_+/g, '_') 
+            .replace(/_+/g, '_')
             .replace(/^_|_$/g, '');
-        
+
         return normalized;
     }
 
@@ -157,6 +163,65 @@ export class DocumentService {
         await this.documentRepo.delete(id);
 
         return { message: 'Document deleted successfully' };
+    }
+
+    async saveWaveFile(
+        filename,
+        pcmData,
+        channels = 1,
+        rate = 24000,
+        sampleWidth = 2,
+    ) {
+        return new Promise((resolve, reject) => {
+            const writer = new wav.FileWriter(filename, {
+                channels,
+                sampleRate: rate,
+                bitDepth: sampleWidth * 8,
+            });
+
+            writer.on('finish', resolve);
+            writer.on('error', reject);
+
+            writer.write(pcmData);
+            writer.end();
+        });
+    }
+
+    async generateAudioByDocument(id: number) {
+        const ai = new GoogleGenAI({
+            apiKey: process.env.GEMINI_KEY
+        });
+
+        const document = await this.getDocumentById(id);
+
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash-preview-tts",
+            contents: [{ parts: [{ text: document.content }] }],
+            config: {
+                responseModalities: ['AUDIO'],
+                speechConfig: {
+                    voiceConfig: {
+                        prebuiltVoiceConfig: { voiceName: 'Zephyr' },
+                    },
+                },
+            },
+        });
+
+        const data = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+        if (!data) {
+            throw new InternalServerErrorException('No audio data received from API');
+        }
+        const audioBuffer = Buffer.from(data, 'base64');
+
+        const fileName = `audio-${id}-${Date.now()}.wav`;
+        const fullPath = path.join(this.UPLOAD_DIR_AUDIO, fileName);
+        await this.saveWaveFile(fullPath, audioBuffer);
+        document.audio_url = this.buildFilePath(`audio/${fileName}`);
+        await this.documentRepo.save(document);
+
+        return {
+            'message': 'Audio generated successfully',
+        }
     }
 
     async retrieveContext(documentId: number, query: string, nResults: number = 5) {

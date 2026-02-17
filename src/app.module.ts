@@ -37,9 +37,10 @@ import { StatisticsModule } from './modules/statistics/statistics.module';
     ChatModule,
     StudyPlanModule,
     StatisticsModule,
-    
+
+
   ],
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule { }

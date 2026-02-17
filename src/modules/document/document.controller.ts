@@ -5,6 +5,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '../auth/guard/auth.guard';
 
 @Controller('document')
+@UseGuards(AuthGuard)
 export class DocumentController {
     constructor(
         private readonly documentService: DocumentService
@@ -31,7 +32,6 @@ export class DocumentController {
             fileSize: 10 * 1024 * 1024
         }
     }))
-    @UseGuards(AuthGuard)
     async createDocument(
         @UploadedFile() file: Express.Multer.File,
         @Body() createDocumentDTO: CreateDocumentDTO,
@@ -45,19 +45,18 @@ export class DocumentController {
     }
 
     @Get(':id')
-    @UseGuards(AuthGuard)
     async getDocumentById(@Param('id', ParseIntPipe) id: number) {
         return this.documentService.getDocumentById(id);
     }
 
     @Delete(':id')
-    @UseGuards(AuthGuard)
+    
     async deleteDocument(@Param('id', ParseIntPipe) id: number) {
         return this.documentService.deleteDocument(id);
     }
 
     @Post(':id/retrieve')
-    @UseGuards(AuthGuard)
+    
     async retrieveContext(
         @Param('id', ParseIntPipe) documentId: number,
         @Body('query') query: string,
@@ -66,6 +65,10 @@ export class DocumentController {
         return this.documentService.retrieveContext(documentId, query, nResults);
     }
 
+    @Post('Audio')
+    async generateAudio(@Query('id', ParseIntPipe) id: number) {
+        return this.documentService.generateAudioByDocument(id);
+    }
 
 
 }
