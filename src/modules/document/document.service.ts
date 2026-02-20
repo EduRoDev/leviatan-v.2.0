@@ -12,12 +12,13 @@ import { firstValueFrom } from 'rxjs';
 import FormData from 'form-data';
 import wav from 'wav';
 import { GoogleGenAI } from '@google/genai';
+import { ConfigService } from '@nestjs/config';
 
 dotenv.config();
 
 @Injectable()
 export class DocumentService {
-
+    private ai: GoogleGenAI;
     private readonly PYTHON_SERVICE_URL = process.env.MICROSERVICE_URL;
     private readonly UPLOAD_DIR = path.join(process.cwd(), 'public', 'documents')
     private readonly UPLOAD_DIR_AUDIO = path.join(process.cwd(), 'public', 'audio')
@@ -25,6 +26,7 @@ export class DocumentService {
     constructor(
         private readonly subjectService: SubjectService,
         private readonly httpService: HttpService,
+        private readonly ConfigService: ConfigService,
 
         @InjectRepository(Document)
         private readonly documentRepo: Repository<Document>
@@ -36,6 +38,12 @@ export class DocumentService {
         if (!fs.existsSync(this.UPLOAD_DIR_AUDIO)) {
             fs.mkdirSync(this.UPLOAD_DIR_AUDIO, { recursive: true });
         }
+    }
+
+    onModuleInit(){
+        this.ai = new GoogleGenAI({
+            apiKey: this.ConfigService.get<string>('GEMINI_KEY'),
+        });
     }
 
     private sanitizeFilename(filename: string): string {
@@ -165,7 +173,7 @@ export class DocumentService {
         return { message: 'Document deleted successfully' };
     }
 
-    async saveWaveFile(
+    private async saveWaveFile(
         filename,
         pcmData,
         channels = 1,
@@ -188,13 +196,10 @@ export class DocumentService {
     }
 
     async generateAudioByDocument(id: number) {
-        const ai = new GoogleGenAI({
-            apiKey: process.env.GEMINI_KEY
-        });
 
         const document = await this.getDocumentById(id);
 
-        const response = await ai.models.generateContent({
+        const response = await this.ai.models.generateContent({
             model: "gemini-2.5-flash-preview-tts",
             contents: [{ parts: [{ text: document.content }] }],
             config: {
@@ -222,6 +227,37 @@ export class DocumentService {
         return {
             'message': 'Audio generated successfully',
         }
+    }
+
+
+    async testAudio() {
+        const response = await this.ai.models.generateContent({
+            model: "gemini-2.5-flash-preview-tts",
+            contents: [{ parts: [{ text: "Hola, este es un mensaje de prueba para generar audio con la API de Google GenAI." }] }],
+            config: {
+                responseModalities: ['AUDIO'],
+                speechConfig: {
+                    voiceConfig: {
+                        prebuiltVoiceConfig: { voiceName: 'Zephyr' },
+                    },
+                },
+            },
+        });
+
+        const data = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+        if (!data) {
+            throw new InternalServerErrorException('No audio data received from API');
+        }
+        const audioBuffer = Buffer.from(data, 'base64');
+
+        const fileName = `test-audio-${Date.now()}.wav`;
+        const fullPath = path.join(this.UPLOAD_DIR_AUDIO, fileName);
+        await this.saveWaveFile(fullPath, audioBuffer);
+
+        return {
+            'message': 'Test audio generated successfully',
+            //'audio_url': this.buildFilePath(`audio/${fileName}`)
+        };
     }
 
     async retrieveContext(documentId: number, query: string, nResults: number = 5) {

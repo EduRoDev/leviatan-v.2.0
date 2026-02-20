@@ -10,22 +10,22 @@ export class AuthController {
 
     constructor(
         private readonly authService: AuthService,
-        private readonly userService: UserService
-    ){}
+        private readonly userService: UserService,
+    ) { }
 
     @Post('register')
-    singUp(@Body() registerDTO: RegisterDTO){
+    singUp(@Body() registerDTO: RegisterDTO) {
         return this.authService.singUp(registerDTO);
     }
 
     @Post('login')
-    singIn(@Body() loginDTO: LoginDTO){
+    singIn(@Body() loginDTO: LoginDTO) {
         return this.authService.singIn(loginDTO);
     }
 
     @Get('profile')
     @UseGuards(AuthGuard)
-    getProfile(@Query('email') email: string){
+    getProfile(@Query('email') email: string) {
         return this.userService.findByEmail(email);
     }
 

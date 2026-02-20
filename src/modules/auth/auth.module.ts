@@ -11,9 +11,9 @@ import { jwtConstants } from './constants/jwt.constants';
       global: true,
       secret: jwtConstants.secret,
       signOptions: { expiresIn: '1h' },
-    })
-   ],  
-  providers: [AuthService,],
+    }),
+  ],  
+  providers: [AuthService],
   controllers: [AuthController]
 })
 export class AuthModule {}
